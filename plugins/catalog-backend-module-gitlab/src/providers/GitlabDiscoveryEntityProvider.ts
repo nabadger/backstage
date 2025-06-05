@@ -484,6 +484,13 @@ export class GitlabDiscoveryEntityProvider implements EntityProvider {
       return false;
     }
 
+    if (this.config.excludeSubGroups?.includes(this.config.group ?? '')) {
+      this.logger.debug(
+        'Skipping project ${project.path_with_namespace} as the sub-broup ${this.config.group} is excluded.',
+      );
+      return false;
+    }
+
     const project_branch =
       this.config.branch ??
       project.default_branch ??
