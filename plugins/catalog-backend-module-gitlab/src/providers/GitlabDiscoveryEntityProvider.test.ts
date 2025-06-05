@@ -293,6 +293,39 @@ describe('GitlabDiscoveryEntityProvider - refresh', () => {
     });
   });
 
+  it('should filter sub-groups that are excluded', async () => {
+    const config = new ConfigReader(
+      mock.config_single_integration_exclude_sub_groups,
+    );
+    const schedule = new PersistingTaskRunner();
+    const entityProviderConnection: EntityProviderConnection = {
+      applyMutation: jest.fn(),
+      refresh: jest.fn(),
+    };
+    const provider = GitlabDiscoveryEntityProvider.fromConfig(config, {
+      logger,
+      schedule,
+    })[0];
+
+    await provider.connect(entityProviderConnection);
+
+    await provider.refresh(logger);
+
+    expect(entityProviderConnection.applyMutation).toHaveBeenCalledWith({
+      type: 'full',
+      entities: mock.expected_location_entities_default_branch.filter(
+        entity =>
+          !entity.entity.metadata.annotations[
+            'backstage.io/managed-by-location'
+          ].includes('test-repo1') &&
+          !entity.entity.metadata.annotations[
+            'backstage.io/managed-by-location'
+          ].includes('awesome'),
+      ),
+    });
+  });
+
+
   // branch and fallback branch are undefined in the config
   it('should ingest catalog from project default branch only', async () => {
     const config = new ConfigReader(mock.config_single_integration);

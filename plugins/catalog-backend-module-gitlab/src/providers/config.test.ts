@@ -63,6 +63,7 @@ describe('config', () => {
         skipForkedRepos: false,
         includeArchivedRepos: false,
         excludeRepos: [],
+        excludeSubGroups: [],
         restrictUsersToGroup: false,
         includeUsersWithoutSeat: false,
         membership: undefined,
@@ -109,6 +110,7 @@ describe('config', () => {
         skipForkedRepos: false,
         includeArchivedRepos: false,
         excludeRepos: [],
+        excludeSubGroups: [],
         restrictUsersToGroup: false,
         includeUsersWithoutSeat: true,
         membership: undefined,
@@ -154,6 +156,7 @@ describe('config', () => {
         schedule: undefined,
         restrictUsersToGroup: false,
         excludeRepos: [],
+        excludeSubGroups: [],
         skipForkedRepos: true,
         includeArchivedRepos: false,
         includeUsersWithoutSeat: false,
@@ -200,6 +203,7 @@ describe('config', () => {
         schedule: undefined,
         restrictUsersToGroup: false,
         excludeRepos: [],
+        excludeSubGroups: [],
         skipForkedRepos: false,
         includeArchivedRepos: true,
         includeUsersWithoutSeat: false,
@@ -256,6 +260,54 @@ describe('config', () => {
     );
   });
 
+  it('valid config with excludeSubGroups', () => {
+    const config = new ConfigReader({
+      catalog: {
+        providers: {
+          gitlab: {
+            test: {
+              group: 'group',
+              host: 'host',
+              branch: 'not-master',
+              fallbackBranch: 'main',
+              entityFilename: 'custom-file.yaml',
+              skipForkedRepos: false,
+              excludeSubGroups: ['foo', 'quz'],
+            },
+          },
+        },
+      },
+    });
+
+    const result = readGitlabConfigs(config);
+    expect(result).toHaveLength(1);
+    result.forEach(r =>
+      expect(r).toStrictEqual({
+        id: 'test',
+        group: 'group',
+        branch: 'not-master',
+        fallbackBranch: 'main',
+        host: 'host',
+        catalogFile: 'custom-file.yaml',
+        projectPattern: /[\s\S]*/,
+        groupPattern: /[\s\S]*/,
+        userPattern: /[\s\S]*/,
+        orgEnabled: false,
+        allowInherited: false,
+        relations: [],
+        schedule: undefined,
+        restrictUsersToGroup: false,
+        skipForkedRepos: false,
+        includeArchivedRepos: false,
+        excludeSubGroups: ['foo', 'quz'],
+        includeUsersWithoutSeat: false,
+        membership: undefined,
+        topics: undefined,
+      }),
+    );
+  });
+
+
   it('valid config with schedule', () => {
     const config = new ConfigReader({
       catalog: {
@@ -296,6 +348,7 @@ describe('config', () => {
         includeArchivedRepos: false,
         restrictUsersToGroup: false,
         excludeRepos: [],
+        excludeSubGroupsRepos: [],
         includeUsersWithoutSeat: false,
         membership: undefined,
         topics: undefined,
